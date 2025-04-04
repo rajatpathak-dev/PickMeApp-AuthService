@@ -15,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -32,8 +33,7 @@ public class JwtAuthFilters extends OncePerRequestFilter {
     @Autowired
     private UserDetailsServiceImp userDetailsService;
 
-    private final RequestMatcher uriMatcher =
-            new AntPathRequestMatcher("/auth/validate", HttpMethod.GET.name());
+
 
     private final JwtService jwtService;
 
@@ -41,43 +41,32 @@ public class JwtAuthFilters extends OncePerRequestFilter {
         this.jwtService = jwtService;
     }
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String authHeader = request.getHeader("Authorization");
         String token = null;
-        if(request.getCookies() != null) {
-            for(Cookie cookie : request.getCookies()) {
-                if(cookie.getName().equals("JwtToken")) {
-                    token = cookie.getValue();
-                }
+        String username = null;
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            username = jwtService.extractEmail(token);
+        }
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (jwtService.validateToken(token, userDetails.getUsername())) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, null);
+                authToken.setDetails(new WebAuthenticationDetailsSource()
+                        .buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
-        if(token == null) {
-            // user has not provided any jwt token hence request should not go forward
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-        System.out.println("Incoming token" + token);
-
-        String email = jwtService.extractEmail(token);
-
-        System.out.println("Incoming Email" + email);
-
-        if(email != null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-            if(jwtService.validateToken(token, userDetails.getUsername())) {
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, null);
-                usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-            }
-        }
-        System.out.println("Forwarding req");
         filterChain.doFilter(request, response);
     }
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        RequestMatcher matcher = new NegatedRequestMatcher(uriMatcher);
-        return matcher.matches(request);
-    }
 }
+
+
+

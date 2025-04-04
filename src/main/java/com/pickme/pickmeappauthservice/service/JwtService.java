@@ -29,7 +29,7 @@ public class JwtService{
 
     public String createToken(Map<String,Object> payload,String email){
         Date date = new Date();
-        Date expiryDate = new Date(date.getTime()+expiry*1000L);
+        Date expiryDate = new Date(date.getTime()+3600*1000L);
 
         return Jwts.builder()
                 .claims(payload)

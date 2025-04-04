@@ -1,12 +1,13 @@
 package com.pickme.pickmeappauthservice.helper;
 
+import com.pickme.pickmeappentityservice.models.Driver;
 import com.pickme.pickmeappentityservice.models.Passenger;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
-public class AuthPassengeDetails extends Passenger implements UserDetails {
+public class AuthPassengeDetails implements UserDetails {
 
     private String userName;
     private String password;
@@ -14,6 +15,11 @@ public class AuthPassengeDetails extends Passenger implements UserDetails {
     public AuthPassengeDetails(Passenger passenger) {
         this.userName = passenger.getEmail();
         this.password = passenger.getPassword();
+    }
+
+    public AuthPassengeDetails(Driver driver) {
+        this.userName = driver.getEmail();
+        this.password = driver.getPassword();
     }
 
     @Override
