@@ -49,8 +49,8 @@ public class AuthController {
 
 
     @GetMapping("/validate")
-    public ResponseEntity<?> validateUser(HttpServletRequest request){
-         return new ResponseEntity<>(Boolean.TRUE,HttpStatus.OK);
+    public ResponseEntity<Boolean> validateToken(){
+            return new ResponseEntity<>(Boolean.TRUE,HttpStatus.OK);
     }
 
 

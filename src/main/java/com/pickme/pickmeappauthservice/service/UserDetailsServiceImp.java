@@ -35,11 +35,13 @@ public class UserDetailsServiceImp implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Optional<Passenger> passengerOptional = passengerRepo.findByEmail(email);
        if(passengerOptional.isPresent()){
+           System.out.println("inside passenger optional");
            return new AuthPassengeDetails(passengerOptional.get());
        }
 
        Optional<Driver> driverOptional = driverRepo.findByEmail(email);
        if(driverOptional.isPresent()){
+           System.out.println("inside driver optional");
            return new AuthPassengeDetails(driverOptional.get());
        }
 

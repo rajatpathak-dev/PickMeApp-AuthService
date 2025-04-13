@@ -28,13 +28,13 @@ public class JwtService{
     private String secret;
 
     public String createToken(Map<String,Object> payload,String email){
-        Date date = new Date();
-        Date expiryDate = new Date(date.getTime()+3600*1000L);
+       long now = System.currentTimeMillis();
+       long expiryDate = 30l*24*60*60*1000;
 
         return Jwts.builder()
                 .claims(payload)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(expiryDate)
+                .expiration(new Date(now+expiryDate))
                 .subject(email)
                 .signWith(getSignKey())
                 .compact();
