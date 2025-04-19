@@ -24,7 +24,7 @@ public class RedisConfiguration {
         JedisConnectionFactory jedisConFactory = new JedisConnectionFactory();
         jedisConFactory.setHostName(redisHost);
         jedisConFactory.setPort(redisPort);
-        return jedisConFactory;
+         return jedisConFactory;
 
     }
 
